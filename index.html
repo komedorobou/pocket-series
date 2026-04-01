@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POCKET｜紙をWebアプリに。NFC/QRカード1枚で、印刷物が進化する。</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --navy: #1A2744;
+  --navy-deep: #0F172A;
+  --sky: #3B82F6;
+  --cyan: #00E8FF;
+  --coral: #FF6B6B;
+  --light-bg: #F5F3EF;
+  --white: #FFFFFF;
+  --text-dark: #1E293B;
+  --text-muted: #64748B;
+  --text-light: #94A3B8;
+  --border: rgba(255,255,255,0.08);
+  --font-heading-en: 'Space Grotesk', sans-serif;
+  --font-body-en: 'Inter', sans-serif;
+  --font-heading-ja: 'Zen Kaku Gothic New', sans-serif;
+  --font-body-ja: 'Noto Sans JP', sans-serif;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body-ja);
+  color: var(--text-dark);
+  background: var(--navy-deep);
+  overflow-x: hidden;
+  line-height: 1.8;
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-16px) rotate(0deg); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(0, 232, 255, 0.2); }
+  50% { box-shadow: 0 0 40px rgba(0, 232, 255, 0.4), 0 0 80px rgba(0, 232, 255, 0.1); }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-60px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(60px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.8s var(--ease), transform 0.8s var(--ease); }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+
+/* ===== HEADER ===== */
+.site-header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-inner {
+  max-width: 1200px; margin: 0 auto; padding: 14px 32px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+.logo {
+  font-family: var(--font-heading-en); font-weight: 700;
+  font-size: 1.4rem; color: var(--white); text-decoration: none;
+  letter-spacing: -0.02em;
+}
+
+.logo span { color: var(--cyan); }
+
+.nav-links { display: flex; gap: 28px; list-style: none; }
+
+.nav-links a {
+  color: var(--text-light); text-decoration: none;
+  font-family: var(--font-body-en); font-size: 0.85rem;
+  font-weight: 500; letter-spacing: 0.02em;
+  transition: color 0.3s ease;
+}
+
+.nav-links a:hover { color: var(--cyan); }
+
+.nav-cta {
+  background: var(--coral); color: var(--white);
+  padding: 10px 24px; border-radius: 8px; text-decoration: none;
+  font-family: var(--font-heading-ja); font-size: 0.85rem; font-weight: 700;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.nav-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(255, 107, 107, 0.3);
+}
+
+/* ===== HERO ===== */
+.hero {
+  position: relative; min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at 30% 20%, rgba(59,130,246,0.15) 0%, transparent 50%),
+              radial-gradient(ellipse at 70% 80%, rgba(0,232,255,0.1) 0%, transparent 50%),
+              var(--navy-deep);
+  overflow: hidden;
+  padding: 120px 32px 80px;
+}
+
+.hero-mesh {
+  position: absolute; inset: 0; opacity: 0.3;
+  background: linear-gradient(135deg, #1A2744, #0F172A 25%, #1e3a5f 50%, #0F172A 75%, #1A2744);
+  background-size: 400% 400%;
+  animation: gradient-shift 12s ease infinite;
+}
+
+.hero-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+.hero-content {
+  position: relative; z-index: 2;
+  max-width: 1200px; width: 100%;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 60px; align-items: center;
+}
+
+.hero-text { animation: slide-in-left 1s var(--ease); }
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(0, 232, 255, 0.1);
+  border: 1px solid rgba(0, 232, 255, 0.2);
+  border-radius: 100px; padding: 6px 16px;
+  font-family: var(--font-body-en); font-size: 0.75rem;
+  color: var(--cyan); font-weight: 500; letter-spacing: 0.05em;
+  text-transform: uppercase; margin-bottom: 28px;
+}
+
+.hero-badge::before {
+  content: ''; width: 6px; height: 6px;
+  background: var(--cyan); border-radius: 50%;
+  animation: glow-pulse 2s ease infinite;
+}
+
+.hero-title {
+  font-family: var(--font-heading-ja); font-weight: 700;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  color: var(--white); line-height: 1.3;
+  letter-spacing: 0.02em; margin-bottom: 20px;
+}
+
+.hero-title em {
+  font-style: normal;
+  background: linear-gradient(135deg, var(--cyan), var(--sky));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-sub {
+  font-size: 1rem; color: var(--text-light);
+  line-height: 1.9; margin-bottom: 36px;
+  max-width: 480px;
+}
+
+.hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
+
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--coral); color: var(--white);
+  padding: 16px 36px; border-radius: 12px;
+  text-decoration: none; font-weight: 700;
+  font-family: var(--font-heading-ja); font-size: 0.95rem;
+  transition: all 0.3s ease; border: none; cursor: pointer;
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(255, 107, 107, 0.35);
+}
+
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: var(--white);
+  padding: 16px 36px; border-radius: 12px;
+  text-decoration: none; font-weight: 500;
+  font-family: var(--font-heading-ja); font-size: 0.95rem;
+  transition: all 0.3s ease; cursor: pointer;
+}
+
+.btn-secondary:hover {
+  border-color: var(--cyan); color: var(--cyan);
+  background: rgba(0, 232, 255, 0.05);
+}
+
+.hero-visual {
+  display: flex; justify-content: center; align-items: center;
+  animation: slide-in-right 1s var(--ease);
+}
+
+.hero-card-img {
+  width: 100%; max-width: 500px;
+  border-radius: 24px;
+  animation: float 6s ease-in-out infinite;
+  filter: drop-shadow(0 20px 60px rgba(0, 232, 255, 0.15));
+}
+
+.hero-stats {
+  display: flex; gap: 40px; margin-top: 40px;
+  padding-top: 32px; border-top: 1px solid var(--border);
+}
+
+.hero-stat-num {
+  font-family: var(--font-heading-en); font-weight: 700;
+  font-size: 1.8rem; color: var(--cyan);
+  display: block; line-height: 1;
+}
+
+.hero-stat-label {
+  font-size: 0.75rem; color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ===== SECTION COMMON ===== */
+.section-dark {
+  background: var(--navy-deep);
+  color: var(--white);
+  padding: 100px 32px;
+}
+
+.section-light {
+  background: var(--light-bg);
+  color: var(--text-dark);
+  padding: 100px 32px;
+}
+
+.section-white {
+  background: var(--white);
+  color: var(--text-dark);
+  padding: 100px 32px;
+}
+
+.container { max-width: 1100px; margin: 0 auto; }
+
+.section-label {
+  font-family: var(--font-heading-en);
+  font-size: 0.75rem; font-weight: 600;
+  color: var(--cyan); letter-spacing: 0.15em;
+  text-transform: uppercase; margin-bottom: 12px;
+}
+
+.section-dark .section-heading,
+.section-heading-white {
+  font-family: var(--font-heading-ja); font-weight: 700;
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  color: var(--white); line-height: 1.4;
+  margin-bottom: 20px;
+}
+
+.section-light .section-heading,
+.section-white .section-heading {
+  font-family: var(--font-heading-ja); font-weight: 700;
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  color: var(--navy); line-height: 1.4;
+  margin-bottom: 20px;
+}
+
+.section-desc {
+  font-size: 0.95rem; color: var(--text-muted);
+  max-width: 600px; line-height: 1.9;
+  margin-bottom: 50px;
+}
+
+/* ===== PROBLEMS ===== */
+.problems-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.problem-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 20px; padding: 36px 28px;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.problem-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(255, 107, 107, 0.3);
+}
+
+.problem-icon {
+  width: 48px; height: 48px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; margin-bottom: 20px;
+  background: rgba(255, 107, 107, 0.1);
+}
+
+.problem-card h3 {
+  font-family: var(--font-heading-ja); font-size: 1.05rem;
+  color: var(--white); margin-bottom: 10px;
+}
+
+.problem-card p {
+  font-size: 0.85rem; color: var(--text-muted); line-height: 1.8;
+}
+
+/* ===== BEFORE AFTER ===== */
+.ba-grid {
+  display: grid; grid-template-columns: 1fr auto 1fr;
+  gap: 40px; align-items: center;
+}
+
+.ba-card {
+  background: var(--white); border-radius: 24px;
+  padding: 40px; box-shadow: 0 4px 32px rgba(0,0,0,0.06);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.ba-card img {
+  width: 100%; border-radius: 16px; margin-bottom: 24px;
+  aspect-ratio: 4/3; object-fit: cover;
+}
+
+.ba-label {
+  font-family: var(--font-heading-en); font-weight: 700;
+  font-size: 0.7rem; letter-spacing: 0.15em;
+  text-transform: uppercase; margin-bottom: 12px;
+  display: inline-block; padding: 4px 12px;
+  border-radius: 6px;
+}
+
+.ba-before .ba-label { background: #fef2f2; color: #dc2626; }
+.ba-after .ba-label { background: #ecfdf5; color: #059669; }
+
+.ba-card h3 {
+  font-family: var(--font-heading-ja); font-size: 1.2rem;
+  color: var(--navy); margin-bottom: 12px;
+}
+
+.ba-card ul {
+  list-style: none; padding: 0;
+}
+
+.ba-card li {
+  font-size: 0.88rem; color: var(--text-muted);
+  padding: 6px 0; display: flex; align-items: center; gap: 8px;
+}
+
+.ba-arrow {
+  font-size: 2.5rem; color: var(--sky);
+  font-family: var(--font-heading-en); font-weight: 700;
+}
+
+/* ===== INDUSTRIES ===== */
+.tab-buttons {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+
+.tab-btn {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  color: var(--text-light);
+  padding: 10px 22px; border-radius: 100px;
+  font-family: var(--font-heading-ja); font-size: 0.85rem;
+  cursor: pointer; transition: all 0.3s ease;
+}
+
+.tab-btn:hover, .tab-btn.active {
+  background: rgba(0, 232, 255, 0.1);
+  border-color: var(--cyan); color: var(--cyan);
+}
+
+.tab-content { display: none; }
+.tab-content.active { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+
+.industry-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 16px; padding: 28px;
+  transition: all 0.3s ease;
+}
+
+.industry-card:hover {
+  border-color: rgba(0, 232, 255, 0.3);
+  transform: translateY(-4px);
+}
+
+.industry-card-emoji { font-size: 1.8rem; margin-bottom: 14px; }
+
+.industry-card h4 {
+  font-family: var(--font-heading-ja); font-size: 0.95rem;
+  color: var(--white); margin-bottom: 8px;
+}
+
+.industry-card p {
+  font-size: 0.82rem; color: var(--text-muted); line-height: 1.8;
+}
+
+.industry-card .stat {
+  display: inline-block; margin-top: 12px;
+  font-family: var(--font-heading-en); font-size: 0.75rem;
+  color: var(--cyan); font-weight: 600;
+  background: rgba(0, 232, 255, 0.1);
+  padding: 4px 12px; border-radius: 6px;
+}
+
+/* ===== STRENGTHS ===== */
+.strengths-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.strength-card {
+  background: var(--white); border-radius: 20px;
+  padding: 40px 28px; text-align: center;
+  border: 1px solid rgba(0,0,0,0.06);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.strength-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.08);
+}
+
+.strength-icon {
+  width: 64px; height: 64px; margin: 0 auto 20px;
+  border-radius: 18px; display: flex;
+  align-items: center; justify-content: center;
+  font-size: 1.6rem;
+}
+
+.strength-card:nth-child(1) .strength-icon { background: rgba(59,130,246,0.1); }
+.strength-card:nth-child(2) .strength-icon { background: rgba(0,232,255,0.1); }
+.strength-card:nth-child(3) .strength-icon { background: rgba(255,107,107,0.1); }
+
+.strength-card h3 {
+  font-family: var(--font-heading-ja); font-size: 1.1rem;
+  color: var(--navy); margin-bottom: 12px;
+}
+
+.strength-card p {
+  font-size: 0.85rem; color: var(--text-muted); line-height: 1.8;
+}
+
+/* ===== PRICING ===== */
+.pricing-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 24px; align-items: start;
+}
+
+.price-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 24px; padding: 40px 28px;
+  text-align: center; position: relative;
+  transition: transform 0.3s ease;
+}
+
+.price-card:hover { transform: translateY(-6px); }
+
+.price-card.featured {
+  border-color: var(--cyan);
+  background: rgba(0, 232, 255, 0.05);
+}
+
+.price-card.featured::before {
+  content: 'おすすめ'; position: absolute;
+  top: -12px; left: 50%; transform: translateX(-50%);
+  background: linear-gradient(135deg, var(--cyan), var(--sky));
+  color: var(--navy-deep); padding: 4px 20px;
+  border-radius: 100px; font-size: 0.75rem; font-weight: 700;
+  font-family: var(--font-heading-ja);
+}
+
+.price-name {
+  font-family: var(--font-heading-en); font-weight: 600;
+  font-size: 0.85rem; color: var(--text-light);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  margin-bottom: 16px;
+}
+
+.price-amount {
+  font-family: var(--font-heading-en); font-weight: 700;
+  font-size: 2.8rem; color: var(--white);
+  line-height: 1; margin-bottom: 4px;
+}
+
+.price-amount span { font-size: 0.9rem; font-weight: 400; color: var(--text-muted); }
+
+.price-desc {
+  font-size: 0.8rem; color: var(--text-muted);
+  margin-bottom: 28px;
+}
+
+.price-features {
+  list-style: none; text-align: left;
+  margin-bottom: 32px;
+}
+
+.price-features li {
+  font-size: 0.85rem; color: var(--text-light);
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+
+.price-features li::before {
+  content: '✓'; color: var(--cyan); font-weight: 700;
+}
+
+.price-btn {
+  display: block; width: 100%; padding: 14px;
+  border-radius: 12px; text-decoration: none;
+  font-weight: 700; font-family: var(--font-heading-ja);
+  font-size: 0.9rem; text-align: center;
+  transition: all 0.3s ease;
+}
+
+.price-card .price-btn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: var(--white);
+}
+
+.price-card .price-btn:hover {
+  border-color: var(--cyan); color: var(--cyan);
+}
+
+.price-card.featured .price-btn {
+  background: var(--coral); border: none; color: var(--white);
+}
+
+.price-card.featured .price-btn:hover {
+  box-shadow: 0 8px 24px rgba(255, 107, 107, 0.3);
+  transform: translateY(-2px);
+}
+
+/* ===== FAQ ===== */
+.faq-list { max-width: 720px; margin: 0 auto; }
+
+.faq-item {
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  padding: 24px 0;
+}
+
+.faq-q {
+  font-family: var(--font-heading-ja); font-weight: 700;
+  font-size: 1rem; color: var(--navy); cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center;
+}
+
+.faq-q::after {
+  content: '+'; font-family: var(--font-heading-en);
+  font-size: 1.4rem; color: var(--sky);
+  transition: transform 0.3s ease;
+}
+
+.faq-item.open .faq-q::after { content: '−'; }
+
+.faq-a {
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.4s ease, padding 0.4s ease;
+  font-size: 0.9rem; color: var(--text-muted); line-height: 1.8;
+}
+
+.faq-item.open .faq-a {
+  max-height: 200px; padding-top: 16px;
+}
+
+/* ===== CTA SECTION ===== */
+.cta-section {
+  background: linear-gradient(135deg, var(--navy), #1e3a5f);
+  padding: 100px 32px; text-align: center;
+  position: relative; overflow: hidden;
+}
+
+.cta-section::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(0,232,255,0.12) 0%, transparent 60%);
+}
+
+.cta-content { position: relative; z-index: 2; }
+
+.cta-heading {
+  font-family: var(--font-heading-ja); font-weight: 700;
+  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  color: var(--white); margin-bottom: 16px;
+}
+
+.cta-sub {
+  font-size: 1rem; color: var(--text-light);
+  margin-bottom: 36px;
+}
+
+.cta-micro {
+  font-size: 0.75rem; color: var(--text-muted);
+  margin-top: 12px;
+}
+
+/* ===== FOOTER ===== */
+.footer {
+  background: var(--navy-deep);
+  border-top: 1px solid var(--border);
+  padding: 48px 32px;
+  text-align: center;
+}
+
+.footer-logo {
+  font-family: var(--font-heading-en); font-weight: 700;
+  font-size: 1.2rem; color: var(--white);
+  margin-bottom: 8px;
+}
+
+.footer-logo span { color: var(--cyan); }
+
+.footer p {
+  font-size: 0.75rem; color: var(--text-muted);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .hero-content { grid-template-columns: 1fr; text-align: center; }
+  .hero-sub { margin: 0 auto 36px; }
+  .hero-actions { justify-content: center; }
+  .hero-stats { justify-content: center; }
+  .hero-visual { order: -1; }
+  .hero-card-img { max-width: 320px; }
+  .problems-grid, .strengths-grid, .pricing-grid { grid-template-columns: 1fr; }
+  .ba-grid { grid-template-columns: 1fr; }
+  .ba-arrow { transform: rotate(90deg); text-align: center; }
+  .tab-content.active { grid-template-columns: 1fr; }
+  .nav-links { display: none; }
+  .nav-cta { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="nav-inner">
+    <a href="#" class="logo">POCKET<span>.</span></a>
+    <ul class="nav-links">
+      <li><a href="#problems">課題</a></li>
+      <li><a href="#solution">解決策</a></li>
+      <li><a href="#industries">業界別</a></li>
+      <li><a href="#pricing">料金</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <a href="#cta" class="nav-cta">無料で資料請求</a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-mesh"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="hero-text">
+      <div class="hero-badge">New — NFC/QR カードソリューション</div>
+      <h1 class="hero-title">紙をWebアプリに。<br><em>カード1枚</em>で、<br>印刷物が進化する。</h1>
+      <p class="hero-sub">分厚い冊子・パンフレット・マニュアルを、スマホでタッチするだけで開けるWebアプリに。NFC/QRカード1枚で、10業界のあらゆる印刷物をデジタル化します。</p>
+      <div class="hero-actions">
+        <a href="#cta" class="btn-primary">無料で資料請求 →</a>
+        <a href="#solution" class="btn-secondary">詳しく見る</a>
+      </div>
+      <div class="hero-stats">
+        <div>
+          <span class="hero-stat-num">10+</span>
+          <span class="hero-stat-label">対応業界</span>
+        </div>
+        <div>
+          <span class="hero-stat-num">30秒</span>
+          <span class="hero-stat-label">セットアップ</span>
+        </div>
+        <div>
+          <span class="hero-stat-num">∞</span>
+          <span class="hero-stat-label">更新無料</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <img src="hero-card.png" alt="NFCカードとスマートフォン" class="hero-card-img">
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEMS -->
+<section class="section-dark" id="problems">
+  <div class="container">
+    <span class="section-label reveal">Problems</span>
+    <h2 class="section-heading-white reveal">印刷物、こんな課題ありませんか？</h2>
+    <p class="section-desc reveal">紙の印刷物は作って終わりではありません。更新・配布・効果測定──見えないコストが積み重なっています。</p>
+    <div class="problems-grid">
+      <div class="problem-card reveal reveal-delay-1">
+        <div class="problem-icon">💸</div>
+        <h3>更新のたびに再印刷</h3>
+        <p>料金改定、人事異動、メニュー変更──そのたびに印刷・配布のコストと時間が発生。古い情報が出回るリスクも。</p>
+      </div>
+      <div class="problem-card reveal reveal-delay-2">
+        <div class="problem-icon">📊</div>
+        <h3>効果測定ができない</h3>
+        <p>配ったパンフレットが読まれたか、どのページが見られたか、まったくわからない。改善のしようがない。</p>
+      </div>
+      <div class="problem-card reveal reveal-delay-3">
+        <div class="problem-icon">🔄</div>
+        <h3>顧客接点が一方通行</h3>
+        <p>紙は渡して終わり。予約・問い合わせ・購入への導線がなく、せっかくの接点を活かしきれていない。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BEFORE / AFTER -->
+<section class="section-light" id="solution">
+  <div class="container">
+    <span class="section-label reveal" style="color: var(--sky);">Solution</span>
+    <h2 class="section-heading reveal">POCKETなら、こう変わる。</h2>
+    <p class="section-desc reveal">紙の冊子がNFC/QRカード1枚に。いつでも最新、どこでもアクセス。</p>
+    <div class="ba-grid">
+      <div class="ba-card ba-before reveal">
+        <img src="paper-mess.png" alt="散らばった紙の書類">
+        <span class="ba-label">Before</span>
+        <h3>紙の印刷物</h3>
+        <ul>
+          <li>❌ 改訂のたびに再印刷（年間数十万円）</li>
+          <li>❌ 閲覧状況が把握できない</li>
+          <li>❌ 多言語対応は別冊が必要</li>
+          <li>❌ 配布後の更新が不可能</li>
+          <li>❌ 予約・問い合わせへの導線なし</li>
+        </ul>
+      </div>
+      <div class="ba-arrow reveal">→</div>
+      <div class="ba-card ba-after reveal">
+        <img src="hero-card.png" alt="NFCカードとWebアプリ">
+        <span class="ba-label">After</span>
+        <h3>POCKET（Webアプリ + NFCカード）</h3>
+        <ul>
+          <li>✅ いつでも即時更新（再印刷ゼロ）</li>
+          <li>✅ 閲覧データをリアルタイム分析</li>
+          <li>✅ ワンタッチで多言語切替</li>
+          <li>✅ 常に最新情報を配信</li>
+          <li>✅ 予約・問い合わせCTAを設置</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRIES -->
+<section class="section-dark" id="industries">
+  <div class="container">
+    <span class="section-label reveal">Industries</span>
+    <h2 class="section-heading-white reveal">10業界、あらゆる印刷物に対応。</h2>
+    <p class="section-desc reveal">業界ごとに最適化されたテンプレートで、すぐにデジタル化をスタートできます。</p>
+
+    <div class="tab-buttons reveal">
+      <button class="tab-btn active" data-tab="biz">ビジネス</button>
+      <button class="tab-btn" data-tab="life">くらし</button>
+      <button class="tab-btn" data-tab="community">地域・教育</button>
+    </div>
+
+    <div class="tab-content active" id="tab-biz">
+      <div class="industry-card reveal reveal-delay-1">
+        <div class="industry-card-emoji">🍽️</div>
+        <h4>飲食業界</h4>
+        <p>メニュー表・ドリンクリスト・多言語対応。テーブルにカードを置くだけ。</p>
+        <span class="stat">人件費 30%削減</span>
+      </div>
+      <div class="industry-card reveal reveal-delay-2">
+        <div class="industry-card-emoji">🏠</div>
+        <h4>不動産業界</h4>
+        <p>物件パンフ・管理規約・入居者ガイド。営業がカード1枚で全物件共有。</p>
+        <span class="stat">市場 1.6兆円→2.4兆円</span>
+      </div>
+      <div class="industry-card reveal reveal-delay-3">
+        <div class="industry-card-emoji">💇</div>
+        <h4>美容業界</h4>
+        <p>メニュー・スタイルカタログ・予約導線。席にカードでタッチ→即予約。</p>
+        <span class="stat">リピート率 90%達成</span>
+      </div>
+      <div class="industry-card reveal reveal-delay-4">
+        <div class="industry-card-emoji">🏭</div>
+        <h4>製造業</h4>
+        <p>設備マニュアル・安全手順書・点検記録。機械にカード貼付で即アクセス。</p>
+        <span class="stat">生産性 67%向上</span>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-life">
+      <div class="industry-card reveal reveal-delay-1">
+        <div class="industry-card-emoji">🏥</div>
+        <h4>医療業界</h4>
+        <p>患者説明書・問診票・服薬ガイド。診察券にNFC埋込で患者体験向上。</p>
+        <span class="stat">電子処方箋 薬局86.5%</span>
+      </div>
+      <div class="industry-card reveal reveal-delay-2">
+        <div class="industry-card-emoji">💪</div>
+        <h4>フィットネス</h4>
+        <p>入会案内・レッスンスケジュール・会員証。タッチで予約完了。</p>
+        <span class="stat">予約作業 70h→3h</span>
+      </div>
+      <div class="industry-card reveal reveal-delay-3">
+        <div class="industry-card-emoji">💒</div>
+        <h4>冠婚葬祭</h4>
+        <p>招待状・席次表・会葬礼状。写真・動画も追加可能。</p>
+        <span class="stat">Web招待状 利用率77%</span>
+      </div>
+      <div class="industry-card reveal reveal-delay-4">
+        <div class="industry-card-emoji">🗾</div>
+        <h4>観光業界</h4>
+        <p>館内案内・観光パンフ・多言語ガイド。NFCでデジタルスタンプラリーも。</p>
+        <span class="stat">全国832駅にNFC導入済</span>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-community">
+      <div class="industry-card reveal reveal-delay-1">
+        <div class="industry-card-emoji">🏛️</div>
+        <h4>自治体・行政</h4>
+        <p>広報誌・防災マップ・ごみ分別。マイナンバーカードNFC認証と連携。</p>
+        <span class="stat">登録者 100万人突破</span>
+      </div>
+      <div class="industry-card reveal reveal-delay-2">
+        <div class="industry-card-emoji">🎓</div>
+        <h4>教育業界</h4>
+        <p>学校案内・シラバス・学生証。オープンキャンパスでカード配布。</p>
+        <span class="stat">NFC学生証 153大学対応</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STRENGTHS -->
+<section class="section-light" id="strengths">
+  <div class="container">
+    <span class="section-label reveal" style="color: var(--sky);">Why POCKET</span>
+    <h2 class="section-heading reveal">選ばれる3つの理由</h2>
+    <div class="strengths-grid">
+      <div class="strength-card reveal reveal-delay-1">
+        <div class="strength-icon">🤝</div>
+        <h3>印刷業者が代理販売できる</h3>
+        <p>既存の取引先にそのまま提案可能。「印刷＋デジタル」のセット売りで単価UPを実現します。</p>
+      </div>
+      <div class="strength-card reveal reveal-delay-2">
+        <div class="strength-icon">📋</div>
+        <h3>10業界テンプレート完備</h3>
+        <p>業界ごとに最適化されたWebアプリテンプレートで、最短即日でデジタル化を開始できます。</p>
+      </div>
+      <div class="strength-card reveal reveal-delay-3">
+        <div class="strength-icon">💳</div>
+        <h3>NFC＋QRの二刀流</h3>
+        <p>NFC対応スマホはタッチで。非対応端末はQRコードで。すべてのユーザーをカバーします。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section-dark" id="pricing">
+  <div class="container">
+    <span class="section-label reveal">Pricing</span>
+    <h2 class="section-heading-white reveal">シンプルな料金体系</h2>
+    <p class="section-desc reveal">必要な分だけ選べる、カスタマイズ自在のプラン。</p>
+    <div class="pricing-grid">
+      <div class="price-card reveal reveal-delay-1">
+        <div class="price-name">Starter</div>
+        <div class="price-amount">¥9,800<span>/月</span></div>
+        <div class="price-desc">Webアプリのみ</div>
+        <ul class="price-features">
+          <li>Webアプリ 1サイト</li>
+          <li>月間PV 10,000まで</li>
+          <li>基本テンプレート</li>
+          <li>QRコード生成</li>
+          <li>閲覧データ分析</li>
+        </ul>
+        <a href="#cta" class="price-btn">お問い合わせ</a>
+      </div>
+      <div class="price-card featured reveal reveal-delay-2">
+        <div class="price-name">Professional</div>
+        <div class="price-amount">¥29,800<span>/月</span></div>
+        <div class="price-desc">Webアプリ + NFCカード</div>
+        <ul class="price-features">
+          <li>Webアプリ 5サイトまで</li>
+          <li>月間PV 無制限</li>
+          <li>全業界テンプレート</li>
+          <li>NFCカード 100枚/月</li>
+          <li>多言語対応（5言語）</li>
+          <li>優先サポート</li>
+        </ul>
+        <a href="#cta" class="price-btn">無料で資料請求 →</a>
+      </div>
+      <div class="price-card reveal reveal-delay-3">
+        <div class="price-name">Enterprise</div>
+        <div class="price-amount">要相談</div>
+        <div class="price-desc">大規模導入・OEM</div>
+        <ul class="price-features">
+          <li>Webアプリ 無制限</li>
+          <li>カスタムデザイン</li>
+          <li>NFCカード大量発注</li>
+          <li>API連携</li>
+          <li>専任サポート</li>
+          <li>SLA保証</li>
+        </ul>
+        <a href="#cta" class="price-btn">お問い合わせ</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section-white" id="faq">
+  <div class="container">
+    <span class="section-label reveal" style="color: var(--sky);">FAQ</span>
+    <h2 class="section-heading reveal">よくある質問</h2>
+    <div class="faq-list">
+      <div class="faq-item reveal">
+        <div class="faq-q">導入にはどれくらいの期間がかかりますか？</div>
+        <div class="faq-a">テンプレート利用の場合、最短即日でWebアプリを公開できます。NFCカードの印刷・発送には通常5〜7営業日ほどいただいています。</div>
+      </div>
+      <div class="faq-item reveal">
+        <div class="faq-q">NFC非対応のスマホでも使えますか？</div>
+        <div class="faq-a">はい。すべてのカードにはQRコードも印刷されており、NFC非対応端末でもカメラで読み取ってアクセスできます。</div>
+      </div>
+      <div class="faq-item reveal">
+        <div class="faq-q">既存の印刷物のデータをそのまま使えますか？</div>
+        <div class="faq-a">PDF・Word・画像データなど、お手持ちのデータからWebアプリ化が可能です。データ移行のサポートも行っています。</div>
+      </div>
+      <div class="faq-item reveal">
+        <div class="faq-q">セキュリティは大丈夫ですか？</div>
+        <div class="faq-a">SSL/TLS暗号化通信、アクセス制御、データバックアップを標準装備。医療・行政向けには追加のセキュリティオプションもご用意しています。</div>
+      </div>
+      <div class="faq-item reveal">
+        <div class="faq-q">解約はいつでもできますか？</div>
+        <div class="faq-a">はい。最低契約期間はなく、いつでも解約可能です。解約後もデータのエクスポートが可能です。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="cta">
+  <div class="cta-content">
+    <h2 class="cta-heading reveal">まずは無料で、<br>資料をご覧ください。</h2>
+    <p class="cta-sub reveal">導入事例・料金詳細・デモサイトへのリンクをお送りします。</p>
+    <a href="#" class="btn-primary reveal" style="font-size: 1.1rem; padding: 20px 48px;">無料で資料請求する →</a>
+    <p class="cta-micro reveal">たった30秒で完了・営業電話なし</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-logo">POCKET<span>.</span></div>
+  <p>&copy; 2026 POCKET. All rights reserved.</p>
+</footer>
+
+<script>
+// Scroll reveal
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+reveals.forEach(el => observer.observe(el));
+
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    // Re-observe new reveals
+    document.querySelectorAll('#tab-' + btn.dataset.tab + ' .reveal:not(.visible)').forEach(el => observer.observe(el));
+  });
+});
+
+// FAQ accordion
+document.querySelectorAll('.faq-q').forEach(q => {
+  q.addEventListener('click', () => {
+    q.parentElement.classList.toggle('open');
+  });
+});
+</script>
+
+</body>
+</html>
